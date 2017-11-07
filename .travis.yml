@@ -3,4 +3,4 @@ node_js:
   - "lts/*"
   - "6"
 after_script:
-  - "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
+  - "npm install coveralls@2.10.0 && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"

@@ -4,6 +4,7 @@
   "description": "Okanjo application framework",
   "main": "okanjo-app.js",
   "scripts": {
+    "clean": "rm -rf .nyc_output coverage",
     "test": "node_modules/.bin/mocha -R spec test",
     "cover": "node_modules/.bin/nyc node_modules/mocha/bin/_mocha",
     "hint": "node_modules/.bin/jshint ./*.js",
@@ -24,7 +25,6 @@
   "author": "Okanjo Partners Inc",
   "license": "MIT",
   "devDependencies": {
-    "coveralls": "^3.0.0",
     "jshint": "^2.8.0",
     "mocha": "^4.0.1",
     "nyc": "^11.3.0",
