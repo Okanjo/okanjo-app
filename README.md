@@ -1,5 +1,7 @@
 # Okanjo Application Framework
 
+[![Build Status](https://travis-ci.org/Okanjo/okanjo-app.svg?branch=master)](https://travis-ci.org/Okanjo/okanjo-app)
+
 This module framework helps makes creating scalable applications quick and simple, focusing on configuration over boilerplate.
 
 The core application module handles:
