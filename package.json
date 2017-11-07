@@ -1,5 +1,5 @@
 {
-  "name": "@okanjo/okanjo-app",
+  "name": "okanjo-app",
   "version": "1.0.0",
   "description": "Okanjo application framework",
   "main": "okanjo-app.js",
