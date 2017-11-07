@@ -1,6 +1,6 @@
 # Okanjo Application Framework
 
-[![Build Status](https://travis-ci.org/Okanjo/okanjo-app.svg?branch=master)](https://travis-ci.org/Okanjo/okanjo-app)
+[![Build Status](https://travis-ci.org/Okanjo/okanjo-app.svg?branch=master)](https://travis-ci.org/Okanjo/okanjo-app) [![Coverage Status](https://coveralls.io/repos/github/Okanjo/okanjo-app/badge.svg?branch=master)](https://coveralls.io/github/Okanjo/okanjo-app?branch=master)
 
 This module framework helps makes creating scalable applications quick and simple, focusing on configuration over boilerplate.
 
