@@ -1,18 +1,18 @@
 {
   "name": "okanjo-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Okanjo application framework",
-  "main": "okanjo-app.js",
+  "main": "OkanjoApp.js",
   "scripts": {
     "clean": "rm -rf .nyc_output coverage",
     "test": "node_modules/.bin/mocha -R spec test",
     "cover": "node_modules/.bin/nyc node_modules/mocha/bin/_mocha",
-    "hint": "node_modules/.bin/jshint ./*.js",
-    "report": "npm run cover && npm run hint"
+    "lint": "node_modules/.bin/eslint .",
+    "report": "npm run cover && npm run lint"
   },
   "repository": {
     "type": "git",
-    "url": "https://okanjo.git.beanstalkapp.com/okanjo-dashboard.git"
+    "url": "https://github.com/okanjo/okanjo-app.git"
   },
   "keywords": [
     "Okanjo",
@@ -25,7 +25,7 @@
   "author": "Okanjo Partners Inc",
   "license": "MIT",
   "devDependencies": {
-    "jshint": "^2.8.0",
+    "eslint": "^4.10.0",
     "mocha": "^4.0.1",
     "nyc": "^11.3.0",
     "should": "^13.1.3"

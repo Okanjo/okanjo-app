@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/Okanjo/okanjo-app.svg?branch=master)](https://travis-ci.org/Okanjo/okanjo-app) [![Coverage Status](https://coveralls.io/repos/github/Okanjo/okanjo-app/badge.svg?branch=master)](https://coveralls.io/github/Okanjo/okanjo-app?branch=master)
 
-This module framework helps makes creating scalable applications quick and simple, focusing on configuration over boilerplate.
+This module framework helps make creating scalable applications quick and simple, focusing on configuration and flexibility over boilerplate.
 
 The core application module handles:
 * Multi-environment, extendable application configuration
@@ -357,7 +357,7 @@ This will perform:
 * Code coverage report
 * Code linting
 
-Sometines, that's overkill to quickly test a change. To run just the unit tests:
+Sometimes, that's overkill to quickly test a quick change. To run just the unit tests:
  
 ```sh
 npm test

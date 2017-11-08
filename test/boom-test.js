@@ -3,7 +3,7 @@ const should = require('should');
 describe('Our Boom', function() {
 
     const boom = require('../okanjo-boom'),
-        OkanjoApp = require('../okanjo-app');
+        OkanjoApp = require('../OkanjoApp');
 
 
     it('can make a success response', function() {

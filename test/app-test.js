@@ -40,7 +40,7 @@ if (cluster.isMaster) {
 
     describe('OkanjoApp', function() {
 
-        const OkanjoApp = require('../okanjo-app');
+        const OkanjoApp = require('../OkanjoApp');
 
         it('should instantiate', function() {
 
@@ -836,7 +836,7 @@ if (cluster.isMaster) {
 
     describe('Worker', function() {
 
-        const OkanjoApp = require('../okanjo-app');
+        const OkanjoApp = require('../OkanjoApp');
 
         it('process should have env', function() {
             process.env.env.should.be.a.String().and.not.empty();
