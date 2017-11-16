@@ -313,9 +313,13 @@ class OkanjoApp extends EventEmitter {
     /**
      * Inspects whatever you give it
      */
-    inspect() {
-        for(let i = 0; i < arguments.length; i++) {
-            console.error(typeof arguments[i] === "object" && arguments[i] instanceof Error ? arguments[i].stack : Util.inspect(arguments[i], { colors: true, depth: 5 }) );
+    inspect(...args) {
+        if (args.length === 2 && typeof args[0] === "number" && typeof args[1] === "object" && args[1] !== null && args[1].showHidden !== undefined) {
+            return this; // trick util.inspect to ignore this
+        } else {
+            for(let i = 0; i < args.length; i++) {
+                console.error(typeof args[i] === "object" && args[i] instanceof Error ? args[i].stack : Util.inspect(args[i], { colors: true, depth: 5, customInspect: false }) );
+            }
         }
     }
 

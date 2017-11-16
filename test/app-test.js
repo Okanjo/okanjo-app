@@ -307,6 +307,12 @@ if (cluster.isMaster) {
                 app.inspect({},"a",1,true,[],new Error('THIS IS ONLY A TEST'));
             });
 
+            it('should not make a mess out of debugging', () => {
+                const res = require('util').inspect(app);
+                res.should.not.match(/showHidden/); // we're not triggering the custom inspector
+                res.should.match(/currentEnvironment/); // we are showing our own properties
+            });
+
         });
 
         describe('error reporting', function() {
