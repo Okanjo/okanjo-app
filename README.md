@@ -40,6 +40,9 @@ const app = new OkanjoApp(config);
 // Additional initialization, plugin registering, etc
 
 // Go!
+await app.connectToServices();
+
+// Or with callbacks:
 app.connectToServices(() => {
     // Everything connected, ready to do your thing!
 });
@@ -108,9 +111,11 @@ Then you can start the app like so:
 `const app = new OkanjoApp(config)`
 * `config`: Object with key-values or nested environment configurations
 
-### `app.connectToServices(callback)`
+### `await app.connectToServices([callback])`
 Starts initialization for any registered services and fires the callback once all are completed.
-* `callback()`: Function that is fired when application modules finish initializing. 
+* `callback(err)`: Function that is fired when application modules finish initializing.
+  * `err` – if a service connector returns an error, it'll stop and get caught here
+* Returns a `Promise`, so you can await it
 
 ### `app.updateReportingStatus(enabled)`
 This method is internally called when constructing. You may use this method to enable reporting if initially disabled.
@@ -122,7 +127,7 @@ Attaches the given keys within `context` to the reporting context, which is atta
 This is useful for setting global information on error reports, such as environment, application, current server, etc.
 * `context`: Object with key-value pairs. 
 
-### `app.report(...)`
+### `await app.report(...)`
 Used to report application errors or bad things to stderr and if configured, Sentry.
 
 This method will take any number of parameters. 
@@ -133,16 +138,16 @@ For example:
 ```js
 myService.connect((err) => {
     if (err) {
-        app.report('Failed to connect to my service!', err);
+        app.report('Failed to connect to my service!', err, { additional: 'context'});
     }
     // ...
 });
 ```
 
 Other example usages:
-* `app.report(err)` - just report an error with no context
-* `app.report('what happened', err)` - report what happened with the original error
-* `app.report('what happened', { err, arg, context, whatever })` - report what happened and provide additional data, detailing what the state was at the time of the error
+* `await app.report(err)` - just report an error with no context
+* `await app.report('what happened', err)` - report what happened with the original error
+* `await app.report('what happened', { err, arg, context, whatever })` - report what happened and provide additional data, detailing what the state was at the time of the error
 
 ### `app.inspect(...)`
 Takes any number of arguments, and for each, prints each to stderr with colors and max depth of 5. Useful for quickly debugging or reporting information about a complex object.
@@ -216,29 +221,6 @@ app.flattenData({ a: { b: 1, c: { d: [2,3,4] }}});
 }
  */
 
-```
-
-### `app.ifOk(err, reply, callback)`
-Useful helper for HAPI route handlers. Will reply with an error if present, or callback if able to do so.
-* `err` – Possible error object
-* `reply` – HAPI route hander reply callback
-* `callback()` – Closure to fire if no error present
-
-Note: This helper automatically converts a non Boom response into a generic 500/bad implementation response without leaking error information.
-
-For example:
-```js
-hapi.route({
-    method: 'GET',
-    path: '/whatever/{id}',
-    handler: (request, reply) => {
-        app.services.whatever.get(request.params.id, (err, whatever) => {
-            app.ifOk(err, reply, () => {          // the service might fail to get the object, so if `err` is present, reply with it
-                reply(app.response.ok(whatever)); // no error present, so reply with 200/ok
-            });
-        })
-    }
-});
 ```
  
 ### `app.response`
@@ -337,6 +319,9 @@ formatter({
 
 ### `app.once('ready', callback)`
 Fires `callback` when the app has finished connecting to all services and is ready.
+
+### `app.once('error', callback)`
+Fires `callback(err)` when a service connector fails on `connectToServices()`
 
 
 ## Extending and Contributing 
