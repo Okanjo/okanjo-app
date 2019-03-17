@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.0.0
+ * Updated for async/await and Node v8
+ * Updated dependencies to latest
+ * 
+
 ## v1.0.2
  * Fixed triggering custom inspection on app instances (e.g. util.inspect firing app.inspect by mistake)
  

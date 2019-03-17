@@ -2,12 +2,11 @@ const should = require('should');
 
 describe('Our Boom', function() {
 
-    const boom = require('../okanjo-boom'),
-        OkanjoApp = require('../OkanjoApp');
+    const OkanjoApp = require('../OkanjoApp');
 
 
     it('can make a success response', function() {
-        const res = boom.ok({
+        const res = OkanjoApp.response.ok({
             test: "string",
             collection: [1, 2, 3]
         });
@@ -23,7 +22,7 @@ describe('Our Boom', function() {
 
 
     it('can make a created response', function() {
-        const res = boom.created({
+        const res = OkanjoApp.response.created({
             test: "string",
             collection: [1, 2, 3]
         });
@@ -48,7 +47,7 @@ describe('Our Boom', function() {
             updated: new Date()
         };
 
-        const data = boom.formatForResponse(original, function (obj) {
+        const data = OkanjoApp.response.formatForResponse(original, function (obj) {
             return {
                 id: "prefix_" + obj.id,
                 name: obj.name,
@@ -102,7 +101,7 @@ describe('Our Boom', function() {
             }
         ];
 
-        const data = boom.formatForResponse(original, function (obj) {
+        const data = OkanjoApp.response.formatForResponse(original, function (obj) {
             return {
                 id: "prefix_" + obj.id,
                 name: obj.name,
@@ -126,22 +125,22 @@ describe('Our Boom', function() {
 
 
     it('will format empty values as null', function() {
-        let data = boom.formatForResponse(null, function () {
+        let data = OkanjoApp.response.formatForResponse(null, function () {
             return "nope";
         });
         should(data).be.exactly(null);
 
-        data = boom.formatForResponse(undefined, function() {
+        data = OkanjoApp.response.formatForResponse(undefined, function() {
             return "nope";
         });
         should(data).be.exactly(null);
 
-        data = boom.formatForResponse("", function() {
+        data = OkanjoApp.response.formatForResponse("", function() {
             return "nope";
         });
         should(data).be.exactly(null);
 
-        data = boom.formatForResponse(0, function() {
+        data = OkanjoApp.response.formatForResponse(0, function() {
             return "nope";
         });
         should(data).be.exactly(null);
@@ -151,7 +150,7 @@ describe('Our Boom', function() {
     it('is accessible in an OkanjoApp instance', function() {
         const app = new OkanjoApp({});
 
-        app.response.should.be.an.Object();
+        app.response.should.be.a.Function();
 
         const res = app.response.ok({
             test: "string",

@@ -1,6 +1,5 @@
 "use strict";
 
-const OkanjoBoom = require('./okanjo-boom' );
 const Util = require('util');
 const Raven = require('raven');
 const Cluster = require('cluster');
@@ -55,6 +54,7 @@ class OkanjoApp extends EventEmitter {
             // extra: { key: ... }
             environment: this.currentEnvironment
         });
+        this._captureException = Util.promisify(this.ravenClient.captureException.bind(this.ravenClient));
 
         // Start rockin' reports
         this.updateReportingStatus(this.config.reportToSentry || false);
@@ -93,36 +93,44 @@ class OkanjoApp extends EventEmitter {
 
     /**
      * Connect to all of the dependant services (e.g. mongo, rabbit, redis, etc)
-     * @param callback - Will always fire, even if already connected
+     * @param [callback] - Will always fire, even if already connected
+     * @returns Promise
      */
     connectToServices(callback) {
+        return new Promise((resolve, reject) => {
+            // Check the dependant service states
+            if (this.ready) {
+                // App is ready, just callback cuz we're good
+                if (callback) return callback();
+                return resolve();
+            } else {
 
-        // Check the dependant service states
-        if (this.ready) {
-            // App is ready, just callback cuz we're good
-            callback();
-        } else {
-
-            // Register the callback when the app finishes initializing
-            if (callback) {
-                this.once('ready', callback);
-            }
-
-            // Check the connection progress
-            if (!this._connecting) {
-                this._connecting = true;
-
-                // Hurry up, this ain't no serial php shenanigans!
-                Async.parallel(this._serviceConnectors, () => {
-
-                    // Everything is connected and ready to rock and roll
-                    this.ready = true;
-                    this._connecting = false;
-                    this.emit('ready');
-
+                // Register the callback when the app finishes initializing
+                this.once('ready', () => {
+                    if (callback) return callback();
+                    return resolve();
                 });
+
+                // Check the connection progress
+                if (!this._connecting) {
+                    this._connecting = true;
+
+                    // Hurry up, this ain't no serial php shenanigans!
+                    Async.parallel(this._serviceConnectors, (err) => {
+                        if (err) {
+                            this.emit('error', err);
+                            if (callback) return callback(err);
+                            return reject(err);
+                        } else {
+                            // Everything is connected and ready to rock and roll
+                            this.ready = true;
+                            this._connecting = false;
+                            this.emit('ready');
+                        }
+                    });
+                }
             }
-        }
+        });
     }
 
     /**
@@ -137,24 +145,6 @@ class OkanjoApp extends EventEmitter {
     //endregion
 
     //region Utility Functions
-
-    /**
-     * Checks if err is defined and if so, replies with the error otherwise fires the callback. It's quite simple
-     * @param err
-     * @param reply
-     * @param callback
-     */
-    ifOk(err, reply, callback) {
-        if (err) {
-            if (err.isBoom) {
-                reply(err);
-            } else {
-                reply(this.response.badImplementation("Something went wrong", err));
-            }
-        } else {
-            if (callback) callback();
-        }
-    }
 
     /**
      * Simple, deep, key-value copier
@@ -225,8 +215,9 @@ class OkanjoApp extends EventEmitter {
 
     /**
      * Reports whatever to Sentry
+     * @example `app.report("message", err, { data })`
      */
-    report() {
+    async report() {
 
         const agg = { err: undefined, meta: { }, reported: false };
 
@@ -266,7 +257,7 @@ class OkanjoApp extends EventEmitter {
             if (agg.err === undefined) {
 
                 let derivedName = "???";
-                Object.keys(agg.meta).every(function(key) {
+                Object.keys(agg.meta).every((key) => {
                     if (typeof agg.meta[key] === "string" && agg.meta[key].length > 0) {
                         derivedName = agg.meta[key];
                         return false;
@@ -278,9 +269,9 @@ class OkanjoApp extends EventEmitter {
             }
 
             // Merge global context
-            Object.keys(this.reportingContext).forEach(function(i) {
+            Object.keys(this.reportingContext).forEach((i) => {
                 agg.meta[i] = this.reportingContext[i];
-            }, this);
+            });
 
             // Stick in a report stack just to make it easier to figure out how we got to this report
             agg.meta.report_stack = reportStack.stack;
@@ -294,16 +285,14 @@ class OkanjoApp extends EventEmitter {
                 extra: agg.meta
             };
 
-            this.ravenClient.captureException(agg.err, data, (err, eventId) => {
-                /* istanbul ignore if: out of scope */
-                if (err) {
-                    console.error(' >> Failed to report to sentry!', err instanceof Error ? err.stack : err);
-                } else {
-                    console.error(' >> Reported as ', eventId);
-                }
-            });
-
-            agg.reported = true;
+            try {
+                const eventId = await this._captureException(agg.err, data);
+                console.error(' >> Reported as ', eventId);
+                agg.eventId = eventId;
+                agg.reported = true;
+            } catch(err) /* istanbul ignore next: out of scope */ {
+                console.error(' >> Failed to report to sentry!', err instanceof Error ? err.stack : err);
+            }
         }
 
         return agg;
@@ -388,9 +377,57 @@ class OkanjoApp extends EventEmitter {
 
 /**
  * Response generator
- * @type {OkanjoBoom}
+ * @type {Boom}
  * @see https://github.com/hapijs/boom
  */
-OkanjoApp.response = OkanjoBoom;
+OkanjoApp.response = require('boom');
+
+/**
+ * Creates a 200-ok response object
+ * @param {*} data - Response data
+ * @return {{statusCode: number, error: null, data: *}}
+ */
+OkanjoApp.response.ok = (data) => {
+    return { statusCode: 200, error: null, data: data };
+};
+
+/**
+ * Creates a 201-created response object
+ * @param {*} data - Response data
+ * @return {{statusCode: number, error: null, data: *}}
+ */
+OkanjoApp.response.created = (data) => {
+    return { statusCode: 201, error: null, data: data };
+};
+
+/**
+ * Helper to format an object or an array of objects using a closure function
+ * @param {Object|Object[]} obj - Object to format
+ * @param {function(obj:Object)} closure - Called on each object, expects a return value of the formatted object
+ * @return {*}
+ */
+OkanjoApp.response.formatForResponse = (obj, closure) => {
+    let out;
+    if (Array.isArray(obj)) {
+        // ARRAY (recursive)
+        out = [];
+        for(let i = 0; i < obj.length; i++) {
+            out.push(OkanjoApp.response.formatForResponse(obj[i], closure));
+        }
+    } else {
+        // SINGLE
+        if (!obj) {
+            out = null;
+        } else {
+            // Object-specific inclusion function
+            out = closure(obj);
+
+            // Automatically add auditing fields
+            if (out && obj.created !== undefined) { out.created = obj.created; }
+            if (out && obj.updated !== undefined) { out.updated = obj.updated; }
+        }
+    }
+    return out;
+};
 
 module.exports = OkanjoApp;

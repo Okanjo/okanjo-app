@@ -1,6 +1,6 @@
-const should = require('should'),
-    cluster = require('cluster'),
-    ravenUnitTestAppUri = process.env.SENTRY_URI;
+const should = require('should');
+const Cluster = require('cluster');
+const ravenUnitTestAppUri = process.env.SENTRY_URI;
 
 const sharedConfig = {
     ravenReportUri: ravenUnitTestAppUri,
@@ -24,13 +24,13 @@ const sharedConfig = {
 };
 
 
-if (cluster.isMaster) {
+if (Cluster.isMaster) {
 
     if (process.env.running_under_istanbul) {
         // use coverage for forked process
         // disabled reporting and output for child process
         // enable pid in child process coverage filename
-        cluster.setupMaster({
+        Cluster.setupMaster({
             exec: './node_modules/.bin/istanbul',
             args: [
                 'cover',  '--print', 'none',  '--include-pid',
@@ -42,7 +42,7 @@ if (cluster.isMaster) {
 
         const OkanjoApp = require('../OkanjoApp');
 
-        it('should instantiate', function() {
+        it('should instantiate', () => {
 
             // Clear the env var if present
             delete process.env.env;
@@ -67,10 +67,10 @@ if (cluster.isMaster) {
             app.ravenClient.should.be.an.Object();
 
             // Verify the boom response is linked up
-            app.response.should.be.an.Object();
+            app.response.should.be.a.Function();
         });
 
-        it('handles process environment settings', function() {
+        it('handles process environment settings', () => {
 
             // Set the process environment, like it would be when an app is actually run
             process.env.env = "dev";
@@ -181,7 +181,7 @@ if (cluster.isMaster) {
             delete process.env.env;
         });
 
-        it('handles process environment settings in default env', function() {
+        it('handles process environment settings in default env', () => {
 
             // Set the process environment, like it would be when an app is actually run
             process.env.env = "default";
@@ -227,7 +227,7 @@ if (cluster.isMaster) {
             delete process.env.env;
         });
 
-        it('dies on missing env config', function() {
+        it('dies on missing env config', () => {
             try {
 
                 // Set the process environment, like it would be when an app is actually run
@@ -260,50 +260,15 @@ if (cluster.isMaster) {
             delete process.env.env;
         });
 
-        describe('ifOk', function() {
+        describe('inspect', () => {
 
             const app = new OkanjoApp({});
 
-            function reply(shouldBeCalled, done, err) {
-                shouldBeCalled.should.be.exactly(true);
-                err.should.not.be.equal(false);
-                err.should.not.be.equal(null);
-                err.should.not.be.equal(undefined);
-                done();
-            }
-
-            function success(shouldBeCalled, done) {
-                shouldBeCalled.should.be.exactly(true);
-                done();
-            }
-
-            it('should call reply if err is set', function(done) {
-                app.ifOk(new Error('KABOOM!'), reply.bind(null, true, done), success.bind(null, false, done));
-            });
-
-            it('should call reply if err is a boom', function(done) {
-                app.ifOk(app.response.notFound("cannot find my trousers"), reply.bind(null, true, done), success.bind(null, false, done));
-            });
-
-            it('should call success if err is not set', function(done) {
-                app.ifOk(undefined, reply.bind(null, false, done), success.bind(null, true, done));
-            });
-
-            it('should call success if err is not set', function(done) {
-                app.ifOk(undefined, reply.bind(null, false, done));
-                process.nextTick(done);
-            });
-        });
-
-        describe('inspect', function() {
-
-            const app = new OkanjoApp({});
-
-            it('should accept nothing', function() {
+            it('should accept nothing', () => {
                 app.inspect()
             });
 
-            it('should a bunch of stuff', function() {
+            it('should a bunch of stuff', () => {
                 app.inspect({},"a",1,true,[],new Error('THIS IS ONLY A TEST'));
             });
 
@@ -315,14 +280,14 @@ if (cluster.isMaster) {
 
         });
 
-        describe('error reporting', function() {
+        describe('error reporting', () => {
 
             const app = new OkanjoApp({
                 ravenReportUri: ravenUnitTestAppUri
             });
 
-            it('report() should accept nothing', function() {
-                const res = app.report();
+            it('report() should accept nothing', async () => {
+                const res = await app.report();
 
                 res.should.be.an.Object();
                 should(res.err).be.exactly(undefined);
@@ -331,10 +296,10 @@ if (cluster.isMaster) {
                 res.reported.should.be.exactly(false);
             });
 
-            it('report() should accept a bunch of stuff', function() {
+            it('report() should accept a bunch of stuff', async () => {
 
-                const err = new Error('THIS IS ONLY A TEST'),
-                    res = app.report({}, "a", 1, true, [], err);
+                const err = new Error('THIS IS ONLY A TEST');
+                const res = await app.report({}, "a", 1, true, [], err);
 
                 res.should.be.an.Object();
                 should(res.err).be.exactly(err);
@@ -343,7 +308,7 @@ if (cluster.isMaster) {
                 res.reported.should.be.exactly(false);
             });
 
-            it('can upgrade reporting status', function() {
+            it('can upgrade reporting status', () => {
 
                 delete process.env.env;
 
@@ -357,7 +322,7 @@ if (cluster.isMaster) {
 
             });
 
-            it('does not upgrade reporting status in default env', function() {
+            it('does not upgrade reporting status in default env', () => {
 
                 delete process.env.env;
 
@@ -375,7 +340,7 @@ if (cluster.isMaster) {
 
             });
 
-            it('can upgrade reporting status in different env', function() {
+            it('can upgrade reporting status in different env', () => {
 
                 process.env.env = "dev";
 
@@ -392,7 +357,7 @@ if (cluster.isMaster) {
                 delete process.env.env;
             });
 
-            it('can set reporting context', function() {
+            it('can set reporting context', () => {
 
                 const app = new OkanjoApp({
                     ravenReportUri: ravenUnitTestAppUri
@@ -407,23 +372,21 @@ if (cluster.isMaster) {
 
             });
 
-            it('can report to sentry and gen error', function(done) {
+            it('can report to sentry and gen error', async () => {
 
                 const app = new OkanjoApp({
                     ravenReportUri: ravenUnitTestAppUri,
                     reportToSentry: true
                 });
 
-                const res = app.report(1, 'Generate unit test error for me');
+                const res = await app.report(1, 'Generate unit test error for me');
                 should(res.err).be.instanceof(Error);
                 res.err.message.should.equal('Report: Generate unit test error for me');
                 res.reported.should.be.exactly(true);
 
-                process.nextTick(done);
-
             });
 
-            it('can report nothing to sentry', function(done) {
+            it('can report nothing to sentry', async () => {
 
                 // but why would you want to, anyway?
 
@@ -432,15 +395,13 @@ if (cluster.isMaster) {
                     reportToSentry: true
                 });
 
-                const res = app.report();
+                const res = await app.report();
                 should(res.err).be.instanceof(Error);
                 res.reported.should.be.exactly(true);
 
-                process.nextTick(done);
-
             });
 
-            it('can report to sentry with given error', function(done) {
+            it('can report to sentry with given error', async () => {
 
                 const app = new OkanjoApp({
                     ravenReportUri: ravenUnitTestAppUri,
@@ -448,15 +409,14 @@ if (cluster.isMaster) {
                 });
 
                 const err = new Error('Hand rolled error'),
-                    res = app.report('What I was doing?', err);
+                    res = await app.report('What I was doing?', err);
                 should(res.err).be.exactly(err);
                 res.reported.should.be.exactly(true);
 
-                process.nextTick(done);
 
             });
 
-            it('can report uncaught exceptions', function(done) {
+            it('can report uncaught exceptions', done => {
 
                 // can't really unit test a process exception cuz mocha captures it
 
@@ -470,41 +430,41 @@ if (cluster.isMaster) {
                 process.nextTick(done);
             });
 
-            it('silences reports when asked', function() {
+            it('silences reports when asked', async () => {
 
                 process.env.SILENCE_REPORTS = true;
 
                 const app = new OkanjoApp(sharedConfig);
 
-                app.report('Best to be seen and not heard');
+                await app.report('Best to be seen and not heard');
 
                 process.env.SILENCE_REPORTS  = undefined;
 
             });
 
-            it('passes environment on fork with default env', function(done) {
+            it('passes environment on fork with default env', done => {
 
                 delete process.env.env;
 
                 const app = new OkanjoApp(sharedConfig);
 
-                const worker = cluster.fork({env: app.currentEnvironment, mode: 'basic'});
+                const worker = Cluster.fork({env: app.currentEnvironment, mode: 'basic'});
 
-                worker.on('exit', function() {
+                worker.on('exit', () => {
                     done();
                 });
 
             });
 
-            it('passes environment on fork with default env', function(done) {
+            it('passes environment on fork with default env', done => {
 
                 process.env.env = 'dev';
 
                 const app = new OkanjoApp(sharedConfig);
 
-                const worker = cluster.fork({env: app.currentEnvironment, mode: 'dev'});
+                const worker = Cluster.fork({env: app.currentEnvironment, mode: 'dev'});
 
-                worker.on('exit', function() {
+                worker.on('exit', () => {
                     done();
                 });
 
@@ -512,15 +472,15 @@ if (cluster.isMaster) {
 
             });
 
-            it('exits when an unhandled exception occurs', function(done) {
+            it('exits when an unhandled exception occurs', done => {
 
                 delete process.env.env;
 
                 const app = new OkanjoApp(sharedConfig);
 
-                const worker = cluster.fork({env: app.currentEnvironment, mode: 'explode'});
+                const worker = Cluster.fork({env: app.currentEnvironment, mode: 'explode'});
 
-                worker.on('exit', function() {
+                worker.on('exit', () => {
                     done();
                 });
 
@@ -528,9 +488,9 @@ if (cluster.isMaster) {
 
         });
 
-        describe('copy', function() {
+        describe('copy', () => {
 
-            it('copy should deep copy', function() {
+            it('copy should deep copy', () => {
 
                 const app = new OkanjoApp({});
 
@@ -642,7 +602,7 @@ if (cluster.isMaster) {
 
         });
 
-        it('should start services correctly', function(done) {
+        it('should start services correctly', done => {
 
             const app = new OkanjoApp(sharedConfig);
             let gotReady = false,
@@ -656,12 +616,12 @@ if (cluster.isMaster) {
             }
 
             // Register a fake service connection
-            app.registerServiceConnector(function(cb) {
+            app.registerServiceConnector(cb => {
                 // Delay until the next event loop
                 process.nextTick(cb);
             });
 
-            app.once('ready', function() {
+            app.once('ready', () => {
                 gotReady = true;
                 checkDone();
             });
@@ -669,7 +629,7 @@ if (cluster.isMaster) {
             app._connecting.should.be.exactly(false);
 
             // Start the app up
-            app.connectToServices(function() {
+            app.connectToServices(() => {
 
                 // Ready should be done
                 app.ready.should.be.exactly(true);
@@ -680,7 +640,113 @@ if (cluster.isMaster) {
 
         });
 
-        it('should start services even if none registered', function(done) {
+        it('should start services correctly with async', async () => {
+
+            const app = new OkanjoApp(sharedConfig);
+            let gotReady = false;
+            let gotCallback = false;
+
+            async function checkDone() {
+                if (gotReady && gotCallback) {
+                    // If we call connectToServices again, it should just callback right away because it's already connected
+                    app.ready.should.be.exactly(true);
+                    await app.connectToServices();
+                }
+
+                await app.connectToServices();
+            }
+
+            // Register a fake service connection
+            app.registerServiceConnector(cb => {
+                // Delay until the next event loop
+                process.nextTick(() => cb());
+            });
+
+            app.once('ready', async () => {
+                gotReady = true;
+                await checkDone();
+            });
+
+            app._connecting.should.be.exactly(false);
+            app.ready.should.be.exactly(false);
+
+            // Start the app up
+            await app.connectToServices();
+
+            // Ready should be done
+            app.ready.should.be.exactly(true);
+
+            gotCallback = true;
+
+        });
+
+        it('should stop the app if there are service connector errors', async () => {
+
+            const app = new OkanjoApp(sharedConfig);
+            let gotErrorEvent = false;
+
+            // Register a fake service connection
+            app.registerServiceConnector(async () => {
+                throw new Error('KABOOM');
+            });
+
+            app.once('ready', async () => {
+                throw new Error('This should not fire');
+            });
+
+            app.once('error', async () => {
+                gotErrorEvent.should.be.exactly(false);
+                gotErrorEvent = true;
+            });
+
+            app._connecting.should.be.exactly(false);
+            app.ready.should.be.exactly(false);
+
+            // Start the app up
+            try {
+                await app.connectToServices();
+            } catch(err) {
+                err.message.should.be.exactly('KABOOM');
+            }
+
+            // Ready should be done
+            app.ready.should.be.exactly(false);
+
+        });
+
+        it('should stop the app if there are service connector errors w/ callbacks', (done) => {
+
+            const app = new OkanjoApp(sharedConfig);
+            let gotErrorEvent = false;
+
+            // Register a fake service connection
+            app.registerServiceConnector(async () => {
+                throw new Error('KABOOM');
+            });
+
+            app.once('ready', async () => {
+                throw new Error('This should not fire');
+            });
+
+            app.once('error', async () => {
+                gotErrorEvent.should.be.exactly(false);
+                gotErrorEvent = true;
+            });
+
+            app._connecting.should.be.exactly(false);
+            app.ready.should.be.exactly(false);
+
+            // Start the app up
+            app.connectToServices((err) => {
+                err.message.should.be.exactly('KABOOM');
+
+                // Ready should be done
+                app.ready.should.be.exactly(false);
+                done();
+            });
+        });
+
+        it('should start services even if none registered', done => {
 
             const app = new OkanjoApp(sharedConfig);
             let gotReady = false,
@@ -693,7 +759,7 @@ if (cluster.isMaster) {
                 }
             }
 
-            app.once('ready', function() {
+            app.once('ready', () => {
                 gotReady = true;
                 checkDone();
             });
@@ -701,7 +767,7 @@ if (cluster.isMaster) {
             app._connecting.should.be.exactly(false);
 
             // Start the app up
-            app.connectToServices(function() {
+            app.connectToServices(() => {
 
                 // Ready should be done
                 app.ready.should.be.exactly(true);
@@ -712,7 +778,7 @@ if (cluster.isMaster) {
 
         });
 
-        it('should start services with no callback registered', function(done) {
+        it('should start services with no callback registered', done => {
 
             const app = new OkanjoApp(sharedConfig);
 
@@ -721,14 +787,14 @@ if (cluster.isMaster) {
             // Start the app up
             app.connectToServices();
 
-            process.nextTick(function() {
+            process.nextTick(() => {
                 app.ready.should.be.exactly(true);
                 done();
             });
 
         });
 
-        it('should start services and not duplicate connection attempts if started multiple times', function(done) {
+        it('should start services and not duplicate connection attempts if started multiple times', done => {
 
             const app = new OkanjoApp(sharedConfig);
             let gotReady = false,
@@ -743,12 +809,12 @@ if (cluster.isMaster) {
             }
 
             // Register a fake service connection
-            app.registerServiceConnector(function(cb) {
+            app.registerServiceConnector(cb => {
                 // Delay until the next event loop
                 setTimeout(cb, 100);
             });
 
-            app.once('ready', function() {
+            app.once('ready', () => {
                 gotReady = true;
                 checkDone();
             });
@@ -756,7 +822,7 @@ if (cluster.isMaster) {
             app._connecting.should.be.exactly(false);
 
             // Start the app up
-            app.connectToServices(function() {
+            app.connectToServices(() => {
 
                 // Ready should be done
                 app.ready.should.be.exactly(true);
@@ -768,7 +834,7 @@ if (cluster.isMaster) {
             app._connecting.should.be.exactly(true);
 
             // Start the app up again
-            app.connectToServices(function() {
+            app.connectToServices(() => {
 
                 // Ready should be done
                 app.ready.should.be.exactly(true);
@@ -840,15 +906,15 @@ if (cluster.isMaster) {
 
 } else {
 
-    describe('Worker', function() {
+    describe('Worker', () => {
 
         const OkanjoApp = require('../OkanjoApp');
 
-        it('process should have env', function() {
+        it('process should have env', () => {
             process.env.env.should.be.a.String().and.not.empty();
         });
 
-        it('instantiates ok', function(done) {
+        it('instantiates ok', done => {
 
             const app = new OkanjoApp(sharedConfig);
             app.should.be.an.Object();
@@ -857,7 +923,7 @@ if (cluster.isMaster) {
 
                 done();
 
-                process.nextTick(function() {
+                process.nextTick(() => {
                     process.exit(0);
                 });
             }
