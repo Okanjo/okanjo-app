@@ -176,7 +176,7 @@ if (Cluster.isMaster) {
 
             app.config.indices.myapp.name.should.be.exactly('myapp-sandbox');
 
-            //app.inspect('CONFIG IS', app.config);
+            //app.dump('CONFIG IS', app.config);
 
             delete process.env.env;
         });
@@ -265,11 +265,11 @@ if (Cluster.isMaster) {
             const app = new OkanjoApp({});
 
             it('should accept nothing', () => {
-                app.inspect()
+                app.dump();
             });
 
             it('should a bunch of stuff', () => {
-                app.inspect({},"a",1,true,[],new Error('THIS IS ONLY A TEST'));
+                app.dump({},"a",1,true,[],new Error('THIS IS ONLY A TEST'));
             });
 
             it('should not make a mess out of debugging', () => {

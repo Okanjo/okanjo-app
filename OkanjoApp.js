@@ -300,15 +300,11 @@ class OkanjoApp extends EventEmitter {
 
     //noinspection JSMethodCanBeStatic
     /**
-     * Inspects whatever you give it
+     * Inspects whatever you give it. Formerly app.inspect(...)
      */
-    inspect(...args) {
-        if (args.length === 2 && typeof args[0] === "number" && typeof args[1] === "object" && args[1] !== null && args[1].showHidden !== undefined) {
-            return this; // trick util.inspect to ignore this
-        } else {
-            for(let i = 0; i < args.length; i++) {
-                console.error(typeof args[i] === "object" && args[i] instanceof Error ? args[i].stack : Util.inspect(args[i], { colors: true, depth: 5, customInspect: false }) );
-            }
+    dump(...args) {
+        for(let i = 0; i < args.length; i++) {
+            console.error(typeof args[i] === "object" && args[i] instanceof Error ? args[i].stack : Util.inspect(args[i], { colors: true, depth: 5, customInspect: false }) );
         }
     }
 

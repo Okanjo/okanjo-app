@@ -149,12 +149,14 @@ Other example usages:
 * `await app.report('what happened', err)` - report what happened with the original error
 * `await app.report('what happened', { err, arg, context, whatever })` - report what happened and provide additional data, detailing what the state was at the time of the error
 
-### `app.inspect(...)`
+### `app.dump(...)`
 Takes any number of arguments, and for each, prints each to stderr with colors and max depth of 5. Useful for quickly debugging or reporting information about a complex object.
 
 Example usages:
-* `app.inspect(myObject)`
-* `app.inspect(myThing, myOtherThing, 42)`
+* `app.dump(myObject)`
+* `app.dump(myThing, myOtherThing, 42)`
+
+> Note: This was formerly `app.inspect(...)`
 
 ### `app.log(...)`
 A wrapper around console.log that writes to stderr and can be conditionally disabled by setting environment variable `SILENCE_REPORTS=1`.

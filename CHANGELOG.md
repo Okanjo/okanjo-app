@@ -9,6 +9,7 @@
  * Service connectors can be async functions (handled by Async.js)
  * Removed `ifOk` helper, since it's irrelevant in Hapi 17
  * `report(...)` is now an async function which returns after the Sentry call completes. Will not throw an error.
+ * Renamed `app.inspect` to `app.dump` to avoid Node 10 deprecation warnings. Custom symbol isn't worth the hassle.
 
 ## v1.0.2
  * Fixed triggering custom inspection on app instances (e.g. util.inspect firing app.inspect by mistake)
