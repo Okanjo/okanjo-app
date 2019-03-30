@@ -241,9 +241,10 @@ app.response.badRequest('You goofed');
  */
 ```
  
-### `app.response.ok(data)`
+### `app.response.ok(data, [h])`
 Creates a new 200/ok response with the given data payload.
 * `data` – value to output as data in the response.
+* `h` – Optional, response toolkit. Internally does: h.response(data).code(200)
 
 For example:
 ```js
@@ -257,9 +258,10 @@ app.response.ok({ hello: 'world' });
  */
 ```
 
-### `app.response.created(data)`
+### `app.response.created(data, [h])`
 Creates a new 201/created response with the given data payload.
 * `data` – value to output as data in the response.
+* `h` – Optional, response toolkit. Internally does: h.response(data).code(201)
 
 For example:
 ```js

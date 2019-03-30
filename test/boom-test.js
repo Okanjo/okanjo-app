@@ -4,6 +4,24 @@ describe('Our Boom', function() {
 
     const OkanjoApp = require('../OkanjoApp');
 
+    class Response {
+
+        constructor(data) {
+            this.output = data;
+            this.statusCode = null;
+        }
+
+        code(statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
+    }
+
+    const FakeResponseToolkit = {
+        response: (data) => {
+            return new Response(data);
+        }
+    };
 
     it('can make a success response', function() {
         const res = OkanjoApp.response.ok({
@@ -20,6 +38,21 @@ describe('Our Boom', function() {
         res.data.collection.length.should.be.equal(3);
     });
 
+    it('can make a success response with the response toolkit', function() {
+        const res = OkanjoApp.response.ok({
+            test: "string",
+            collection: [1, 2, 3]
+        }, FakeResponseToolkit);
+
+        res.should.be.an.Object();
+        res.statusCode.should.be.equal(200);
+        res.output.statusCode.should.be.equal(200);
+        should(res.output.error).be.null();
+        res.output.data.should.be.an.Object();
+        res.output.data.test.should.be.a.String();
+        res.output.data.collection.should.be.an.Array();
+        res.output.data.collection.length.should.be.equal(3);
+    });
 
     it('can make a created response', function() {
         const res = OkanjoApp.response.created({
@@ -36,6 +69,21 @@ describe('Our Boom', function() {
         res.data.collection.length.should.be.equal(3);
     });
 
+    it('can make a created response with the response toolkit', function() {
+        const res = OkanjoApp.response.created({
+            test: "string",
+            collection: [1, 2, 3]
+        }, FakeResponseToolkit);
+
+        res.should.be.an.Object();
+        res.statusCode.should.be.equal(201);
+        res.output.statusCode.should.be.equal(201);
+        should(res.output.error).be.null();
+        res.output.data.should.be.an.Object();
+        res.output.data.test.should.be.a.String();
+        res.output.data.collection.should.be.an.Array();
+        res.output.data.collection.length.should.be.equal(3);
+    });
 
     it('can format an object using a closure', function() {
         const original = {
@@ -74,7 +122,6 @@ describe('Our Boom', function() {
         // this property should now exist
         data.injected.should.be.equal(true);
     });
-
 
     it('can format an array of objects using a closure', function() {
 
@@ -123,7 +170,6 @@ describe('Our Boom', function() {
 
     });
 
-
     it('will format empty values as null', function() {
         let data = OkanjoApp.response.formatForResponse(null, function () {
             return "nope";
@@ -146,7 +192,6 @@ describe('Our Boom', function() {
         should(data).be.exactly(null);
     });
 
-
     it('is accessible in an OkanjoApp instance', function() {
         const app = new OkanjoApp({});
 
@@ -165,6 +210,5 @@ describe('Our Boom', function() {
         res.data.collection.should.be.an.Array();
         res.data.collection.length.should.be.equal(3);
     });
-
 
 });

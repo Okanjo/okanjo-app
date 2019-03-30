@@ -379,21 +379,36 @@ class OkanjoApp extends EventEmitter {
 OkanjoApp.response = require('boom');
 
 /**
+ * Returns a consistent response payload, like Booms but not
+ * @param data
+ * @param statusCode
+ * @param h – Response toolkit
+ * @returns {*}
+ */
+OkanjoApp.response.custom = (data, statusCode, h) => {
+    const output = { statusCode, error: null, data };
+    if (h) return h.response(output).code(statusCode);
+    return output;
+};
+
+/**
  * Creates a 200-ok response object
  * @param {*} data - Response data
+ * @param {*} h – Response toolkit
  * @return {{statusCode: number, error: null, data: *}}
  */
-OkanjoApp.response.ok = (data) => {
-    return { statusCode: 200, error: null, data: data };
+OkanjoApp.response.ok = (data, h) => {
+    return OkanjoApp.response.custom(data, 200, h);
 };
 
 /**
  * Creates a 201-created response object
  * @param {*} data - Response data
+ * @param {*} h – Response toolkit
  * @return {{statusCode: number, error: null, data: *}}
  */
-OkanjoApp.response.created = (data) => {
-    return { statusCode: 201, error: null, data: data };
+OkanjoApp.response.created = (data, h) => {
+    return OkanjoApp.response.custom(data, 201, h);
 };
 
 /**
