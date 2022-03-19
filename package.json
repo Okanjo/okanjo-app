@@ -25,13 +25,13 @@
   "author": "Okanjo Partners Inc",
   "license": "MIT",
   "devDependencies": {
+    "@hapi/boom": "^7.3.0",
     "eslint": "^8.11.0",
     "mocha": "^9.2.2",
     "nock": "^13.2.4",
     "nyc": "^15.1.0",
-    "should": "^13.2.3",
-    "@hapi/boom": "^7.3.0",
-    "raven": "^2.6.4"
+    "raven": "^2.6.4",
+    "should": "^13.2.3"
   },
   "peerDependencies": {
     "@hapi/boom": "^7.3.0",
@@ -80,7 +80,9 @@
         }
       },
       {
-        "files": [ "test/*.js"],
+        "files": [
+          "test/*.js"
+        ],
         "parserOptions": {
           "sourceType": "script"
         }
