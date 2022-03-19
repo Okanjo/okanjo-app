@@ -1,6 +1,6 @@
 # Okanjo Application Framework
 
-[![Build Status](https://travis-ci.org/Okanjo/okanjo-app.svg?branch=master)](https://travis-ci.org/Okanjo/okanjo-app) [![Coverage Status](https://coveralls.io/repos/github/Okanjo/okanjo-app/badge.svg?branch=master)](https://coveralls.io/github/Okanjo/okanjo-app?branch=master)
+[![Node.js CI](https://github.com/Okanjo/okanjo-app/actions/workflows/node.js.yml/badge.svg)](https://github.com/Okanjo/okanjo-app/actions/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/Okanjo/okanjo-app/badge.svg?branch=master)](https://coveralls.io/github/Okanjo/okanjo-app?branch=master)
 
 This module framework helps make creating scalable applications quick and simple, focusing on configuration and flexibility over boilerplate.
 
@@ -32,7 +32,8 @@ const config = {
         yourKey: 'yourValue'
     },
     reportToSentry: false,
-    //ravenReportUri: 'http://your-app@app.getsentry.com/number'
+    // ravenReportUri: 'http://your-app@app.getsentry.com/number',
+    // ravenOptions: {...}
 };
 
 const app = new OkanjoApp(config);
@@ -42,14 +43,9 @@ const app = new OkanjoApp(config);
 // Go!
 await app.connectToServices();
 
-// Or with callbacks:
-app.connectToServices(() => {
-    // Everything connected, ready to do your thing!
-});
-
 ```
 
-We generally recommend creating a config.js file, that exports a configuration object.
+We generally recommend creating a `config.js` file, that exports a configuration object.
 
 ```text
 my_app/
@@ -70,7 +66,8 @@ module.exports = {
     },
     
     reportToSentry: false,
-    //ravenReportUri: 'https://your-reporting-uri',
+    // ravenReportUri: 'https://your-reporting-uri',
+    // ravenOptions: {...}
     
     production: {
         webServer: {
@@ -86,7 +83,7 @@ index.js:
 const OkanjoApp = require('okanjo-app');
 const app = new OkanjoApp(config);
 
-app.connectToServices(() => {
+app.connectToServices().then(() => {
     // Everything connected, ready to do your thing!
 });
 ```
@@ -147,7 +144,7 @@ myService.connect((err) => {
 Other example usages:
 * `await app.report(err)` - just report an error with no context
 * `await app.report('what happened', err)` - report what happened with the original error
-* `await app.report('what happened', { err, arg, context, whatever })` - report what happened and provide additional data, detailing what the state was at the time of the error
+* `await app.report('what happened', err, { arg, context, whatever })` - report what happened and provide additional data, detailing what the state was at the time of the error
 
 ### `app.dump(...)`
 Takes any number of arguments, and for each, prints each to stderr with colors and max depth of 5. Useful for quickly debugging or reporting information about a complex object.
@@ -156,7 +153,6 @@ Example usages:
 * `app.dump(myObject)`
 * `app.dump(myThing, myOtherThing, 42)`
 
-> Note: This was formerly `app.inspect(...)`
 
 ### `app.log(...)`
 A wrapper around console.log that writes to stderr and can be conditionally disabled by setting environment variable `SILENCE_REPORTS=1`.
@@ -167,7 +163,7 @@ Example usages:
 
 ### `app.copy(destination, source)`
 ### `OkanjoApp.copy(destination, source)`
-Deep copies key-values from `source` to `destination`. Traverses arrays and objects recursively.
+Deep copies key-values from `source` to `destination`. Traverse arrays and objects recursively.
 * `source` – Source object to copy from
 * `destination` – Destination object to copy into. If not truthy, it will be made into an object or array. 
 
