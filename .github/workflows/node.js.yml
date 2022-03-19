@@ -26,6 +26,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
+    - run: npm install # npm ci doesn't like peer dependencies
     - run: npm run report
     - run: npm install coveralls@2.10.0 && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
