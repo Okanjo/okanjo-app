@@ -1,11 +1,10 @@
 # Changelog
 
-## v3.1.0
+## v3.2.0
 Node v16 Upgrade!
 
 Notable Changes:
 - Using callback functions in service connectors is deprecated. Return a Promise or AsyncFunction instead.
-- Boom and Raven are now peer dependencies, so you should add them yourself
 
 - OkanjoApp.js
     - Removed Async dependency
@@ -13,9 +12,8 @@ Notable Changes:
     - connectToServices now uses Promise.all instead of the Async parallel
     - Various refactoring
 - package.json:
-    - Bumped to 3.0.0
+    - Bumped to 3.2.0
     - Upgraded all dependencies to latest
-    - Moved boom and raven to peer dependencies
     - Removed async lib
     - Moved eslint config inside
 

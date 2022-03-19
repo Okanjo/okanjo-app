@@ -21,12 +21,6 @@ Add to your project like so:
 npm install okanjo-app
 ```
 
-Requires peer dependencies:
-
-```sh
-npm install @hapi/boom raven
-```
-
 ## Example usage
 
 A very simple implementation could look like this:
