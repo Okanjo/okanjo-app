@@ -197,7 +197,7 @@ describe('Our Boom', function() {
     it('is accessible in an OkanjoApp instance', function() {
         const app = new OkanjoApp({});
 
-        app.response.should.be.a.Function();
+        app.response.should.be.an.Object();
 
         const res = app.response.ok({
             test: "string",

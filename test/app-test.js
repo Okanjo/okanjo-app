@@ -67,7 +67,7 @@ describe('OkanjoApp', function() {
             app.ravenClient.should.be.an.Object();
 
             // Verify the boom response is linked up
-            app.response.should.be.a.Function();
+            app.response.should.be.an.Object();
         });
 
         it('handles process environment settings', () => {

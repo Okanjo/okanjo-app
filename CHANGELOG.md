@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.0.0
+## v3.1.0
 Node v16 Upgrade!
 
 Notable Changes:
