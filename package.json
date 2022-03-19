@@ -44,6 +44,11 @@
       "lcovonly"
     ]
   },
+  "mocha": {
+    "require": ["should"],
+    "reporter": "spec",
+    "checkLeaks": true
+  },
   "eslintConfig": {
     "ignorePatterns": [
       "/node_modules/**",
