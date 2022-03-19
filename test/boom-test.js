@@ -1,4 +1,6 @@
 const should = require('should');
+const Cluster = require("cluster");
+if (!Cluster.isMaster) return;
 
 describe('Our Boom', function() {
 

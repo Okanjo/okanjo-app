@@ -4,7 +4,6 @@ const Util = require('util');
 const Raven = require('raven');
 const Cluster = require('cluster');
 const EventEmitter = require('events').EventEmitter;
-const Async = require('async');
 
 /**
  * Common application helpers and configurations
@@ -38,7 +37,7 @@ class OkanjoApp extends EventEmitter {
             this._applyEnvConfig(process.env.env, this.config);
         }
 
-        // Set Raven reporting context information
+        // Set Sentry reporting context information
         this._reportToSentry = false;
         this.reportingContext = {
             environment: this.currentEnvironment,
@@ -46,13 +45,15 @@ class OkanjoApp extends EventEmitter {
         };
 
         // Create the reporter
+        const ravenOptions = this.config.ravenOptions || {};
         this.ravenClient = new Raven.Client(this.config.ravenReportUri, {
             // release: ...
             tags: {
                 worker_type: process.env.worker_type || 'master',
             },
             // extra: { key: ... }
-            environment: this.currentEnvironment
+            environment: this.currentEnvironment,
+            ...ravenOptions
         });
         this._captureException = Util.promisify(this.ravenClient.captureException.bind(this.ravenClient));
 
@@ -71,7 +72,6 @@ class OkanjoApp extends EventEmitter {
 
         // Bucket for prerequisite service connections that block app.ready
         this._serviceConnectors = [];
-
     }
 
     /**
@@ -106,28 +106,43 @@ class OkanjoApp extends EventEmitter {
             } else {
 
                 // Register the callback when the app finishes initializing
-                this.once('ready', () => {
+                const ready = () => {
                     if (callback) return callback();
                     return resolve();
-                });
+                };
+                this.once('ready', ready);
 
                 // Check the connection progress
                 if (!this._connecting) {
                     this._connecting = true;
 
-                    // Hurry up, this ain't no serial php shenanigans!
-                    Async.parallel(this._serviceConnectors, (err) => {
-                        if (err) {
-                            this.emit('error', err);
-                            if (callback) return callback(err);
-                            return reject(err);
-                        } else {
-                            // Everything is connected and ready to rock and roll
+                    Promise
+                        .all(this._serviceConnectors.map(fn => {
+                            // 99% of the time, AsyncFunctions and Promises are interchangeable
+                            // but not in Promise.all !
+                            if (fn[Symbol.toStringTag] === "AsyncFunction") {
+                                return new Promise((resolve, reject) => {
+                                    fn().then(resolve, reject);
+                                });
+                            } else if (fn[Symbol.toStringTag] === "Promise") {
+                                return fn;
+                            } else {
+                                this.log('[OkanjoApp] Callbacks deprecated: Service connectors should return async functions or promises');
+                                return Util.promisify(fn);
+                            }
+                        }))
+                        .then(() => {
                             this.ready = true;
                             this._connecting = false;
                             this.emit('ready');
-                        }
-                    });
+                        }, (err) => {
+                            this._connecting = false;
+                            this.removeListener('ready', ready);
+                            this.emit('error', err);
+                            if (callback) return callback(err);
+                            return reject(err);
+                        })
+                    ;
                 }
             }
         });
@@ -255,16 +270,7 @@ class OkanjoApp extends EventEmitter {
 
             // Always get a stack trace
             if (agg.err === undefined) {
-
-                let derivedName = "???";
-                Object.keys(agg.meta).every((key) => {
-                    if (typeof agg.meta[key] === "string" && agg.meta[key].length > 0) {
-                        derivedName = agg.meta[key];
-                        return false;
-                    }
-                    return true;
-                });
-
+                let derivedName = Object.values(agg.meta).find(v => typeof v === "string" && v.length > 0) || "???";
                 agg.err = new Error('Report: ' + derivedName);
             }
 
@@ -303,7 +309,7 @@ class OkanjoApp extends EventEmitter {
      * Inspects whatever you give it. Formerly app.inspect(...)
      */
     dump(...args) {
-        for(let i = 0; i < args.length; i++) {
+        for (let i = 0; i < args.length; i++) {
             console.error(typeof args[i] === "object" && args[i] instanceof Error ? args[i].stack : Util.inspect(args[i], { colors: true, depth: 5, customInspect: false }) );
         }
     }
@@ -337,7 +343,7 @@ class OkanjoApp extends EventEmitter {
      * Report uncaught exceptions and die when one happens
      * @param err
      */
-    _reportUncaughtException(err) {
+    async _reportUncaughtException(err) {
         // Tell us everything we are doing wrong
         let exitAfterReport = arguments.length <= 1;
 
@@ -347,15 +353,9 @@ class OkanjoApp extends EventEmitter {
         console.error('\\---------------------------------------------------------------------------------/');
         console.error('');
 
-        this.ravenClient.captureException(err, { extra: this.reportingContext }, (err, eventId) => {
-            /* istanbul ignore if: out of scope */
-            if (err) {
-                console.error(' >> Failed to report exception to Sentry!', err instanceof Error ? err.stack : err);
-            } else {
-                console.error(' >> Reported uncaught exception as ', eventId);
-            }
-            if (exitAfterReport) process.exit(1);
-        });
+        const eventId = await this._captureException(err, { extra: this.reportingContext });
+        console.error(' >> Reported uncaught exception as ', eventId);
+        if (exitAfterReport) process.exit(1);
     }
 
     /**
@@ -376,7 +376,7 @@ class OkanjoApp extends EventEmitter {
  * @type {Boom}
  * @see https://github.com/hapijs/boom
  */
-OkanjoApp.response = require('boom');
+OkanjoApp.response = require('@hapi/boom');
 
 /**
  * Returns a consistent response payload, like Booms but not

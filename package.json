@@ -1,6 +1,6 @@
 {
   "name": "okanjo-app",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Okanjo application framework",
   "main": "OkanjoApp.js",
   "scripts": {
@@ -25,14 +25,14 @@
   "author": "Okanjo Partners Inc",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^5.15.2",
-    "mocha": "^6.0.2",
-    "nyc": "^13.3.0",
+    "eslint": "^8.11.0",
+    "mocha": "^9.2.2",
+    "nock": "^13.2.4",
+    "nyc": "^15.1.0",
     "should": "^13.2.3"
   },
-  "dependencies": {
-    "async": "^2.6.2",
-    "boom": "^7.3.0",
+  "peerDependencies": {
+    "@hapi/boom": "^7.3.0",
     "raven": "^2.6.4"
   },
   "nyc": {
@@ -40,6 +40,49 @@
       "text-summary",
       "html",
       "lcovonly"
+    ]
+  },
+  "eslintConfig": {
+    "ignorePatterns": [
+      "/node_modules/**",
+      "/coverage/**",
+      "/.nyc_output/**"
+    ],
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module"
+    },
+    "plugins": [],
+    "extends": "eslint:recommended",
+    "globals": {
+      "require": true,
+      "module": true,
+      "describe": true,
+      "it": true,
+      "before": true,
+      "after": true,
+      "Promise": true
+    },
+    "overrides": [
+      {
+        "files": [
+          "docs/**",
+          "OkanjoApp.js"
+        ],
+        "rules": {
+          "no-console": "off"
+        }
+      },
+      {
+        "files": [ "test/*.js"],
+        "parserOptions": {
+          "sourceType": "script"
+        }
+      }
     ]
   }
 }
