@@ -206,7 +206,7 @@ class OkanjoApp extends EventEmitter {
                     } else {
                         output[key] = input[key]; // as-is
                     }
-                } else if (typeof input[key] === "object" && input[key] && input[key].constructor && input[key].constructor.name === "ObjectID") { // Object.create(null) is truthy, but .constructor is undefined
+                } else if (typeof input[key] === "object" && input[key] && input[key].constructor && (input[key].constructor.name === "ObjectID" || input[key].constructor.name === "ObjectId")) { // Object.create(null) is truthy, but .constructor is undefined
                     output[key] = input[key].toString();
                 } else if (typeof input[key] === 'object') {
                     // Make child objects flat too (always returns object so Object.keys is safe)

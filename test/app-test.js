@@ -597,6 +597,9 @@ describe('OkanjoApp', function() {
             function ObjectID(value = "ffffffffffffffffffffffff") {
                 this.value = value;
             }
+            function ObjectId(value = "ffffffffffffffffffffffff") {
+                this.value = value;
+            }
 
             ObjectID.prototype.toString = function() {
                 return this.value;
@@ -618,7 +621,8 @@ describe('OkanjoApp', function() {
                 },
                 d: new ObjectID(),
                 e: new Date(),
-                f: ctorLessObj
+                f: ctorLessObj,
+                g: new ObjectId(),
             };
 
             const expected = {
@@ -631,7 +635,8 @@ describe('OkanjoApp', function() {
                 c_c_b_c_b_b: undefined,
                 d: source.d.toString(),
                 e: source.e,
-                f_z: "asdf"
+                f_z: "asdf",
+                g: source.g.toString(),
             };
 
             OkanjoApp.flattenData(source).should.deepEqual(expected);
