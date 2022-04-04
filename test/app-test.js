@@ -2,6 +2,7 @@ const should = require('should');
 const Cluster = require('cluster');
 const OkanjoApp = require("../OkanjoApp");
 const ravenUnitTestAppUri = process.env.SENTRY_URI;
+const { describe, it } = require('mocha');
 
 const sharedConfig = {
     ravenReportUri: ravenUnitTestAppUri,
